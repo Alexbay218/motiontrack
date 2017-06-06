@@ -1,3 +1,5 @@
+#Include %A_ScriptDir%\MTMath.ahk
+
 ;init and gui
 SetWorkingDir, %A_ScriptDir%
 videoName = %A_WorkingDir%\video\video.mov
@@ -81,15 +83,19 @@ while(WinActive(videoNameFO . " - VLC media player"))
 		ToolTip, %currentTime%:%OutputVarX% x %ROutputVarY%, OutputVarX+30, OutputVarY+30
 		in = %currentTime%: %OutputVarX%`, %ROutputVarY%`n
 		inCSV =%currentTime%`,%OutputVarX%`,%ROutputVarY%`n
-		FileAppend, %in%,%A_WorkingDir%\log\log.txt
-		FileAppend, %inCSV%,%A_WorkingDir%\log\log.csv
 		Data.Insert(inCSV)
 	}
 }
-
 ;post gathering
 ToolTip,
 WinClose, VLC media player
+for index, element in Data
+{
+	percent := ceil(((index+1)/Data.length())*100)
+	Progress, %percent%, Processing...
+	FileAppend, %element%,%A_WorkingDir%\log\log.csv
+}
+Progress, Off
 Return
 
 GuiClose:
