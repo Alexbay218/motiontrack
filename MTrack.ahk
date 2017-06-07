@@ -1,3 +1,4 @@
+#SingleInstance force
 #Include %A_ScriptDir%\MTMath.ahk
 #Include %A_ScriptDir%\LineDraw.ahk
 
@@ -115,6 +116,7 @@ ScaleProcess:
 Gui, 1:Destroy
 Gui, Input:Submit
 WinClose, VLC media player
+WinClose, %videoNameFO% - VLC media player
 inLogT := Object()
 inLogX := Object()
 inLogY := Object()
@@ -129,8 +131,33 @@ Loop, Read, %A_ScriptDir%\log\logRaw.csv
 	inLogY[ArrayCount] := SubStr(str, comma2+2)
 	ArrayCount += 1
 }
-out := inLogT[0] . "|" . inLogX[0] . "|" . inLogY[0]
-MsgBox, %out%
+ArrayCount := 0
+org := origin(p)
+outLog := Object()
+sca := Object()
+while(ArrayCount < inLogT.length())
+{
+	percent := ceil(((ArrayCount+1)/inLogT.length())*100)
+	s := ArrayCount . "/" . inLogT.length()
+	Progress, %percent%, Processing... %s%
+	sca[0] := inLogX[ArrayCount]
+	sca[1] := inLogY[ArrayCount]
+	sca[2] := XL + 0
+	sca[3] := YL + 0
+	res := compute(p,org,sca)
+	inCSV := inLogT[ArrayCount] . "`," . res[0] . "`," . res[1] . "`n"
+	outLog.Insert(inCSV)
+	ArrayCount += 1
+}
+FileDelete, %A_WorkingDir%\log\logScale.csv
+outLog[0] := "Time`,X`,Y`n"
+for index, element in outLog
+{
+	percent := ceil(((index+1)/outLog.length())*100)
+	Progress, %percent%, Writing...
+	FileAppend, %element%,%A_WorkingDir%\log\logScale.csv
+}
+Progress, Off
 Return
 
 TrackerSelect:
@@ -164,7 +191,6 @@ while(WinActive(videoNameFO . " - VLC media player"))
 	{
 		currentTime := round((A_TickCount - StartTime)/1000,3)
 		ToolTip, %currentTime%:%OutputVarX% x %ROutputVarY%, OutputVarX+30, OutputVarY+30
-		in = %currentTime%: %OutputVarX%`, %ROutputVarY%`n
 		inCSV =%currentTime%`,%OutputVarX%`,%ROutputVarY%`n
 		Data.Insert(inCSV)
 	}

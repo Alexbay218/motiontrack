@@ -1,3 +1,4 @@
+;Credit to AHKLerner on the AHK forums
 Blank = 008080
 Black    = 000000
 Green    = 008000

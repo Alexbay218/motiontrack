@@ -10,25 +10,108 @@ compute(d,o,p)
 	;return array with {xs,ys,err}
 	;					0  1  2
 	;if err is -1, unsolvable
-	dl := d.length()
-	Loop %dl%
-	{
-		d[A_Index] := -d[A_Index] ;Negating all values for some reason
-	}
 	r := Object()
 	r[2] := 0
+	tmp := Object()
+	rc := 0
+	rm := d.length()
+	while(rc <= rm)
+	{
+		tmp[rc] := d[rc]
+		rc := rc+1
+	}
 	mx := (d[3]-d[1])/(d[2]-d[0])
 	my := (d[7]-d[5])/(d[6]-d[4])
-	disto := Abs(Sqrt((o[0]-p[0])**2+(o[1]-p[1])**2))
-	distx := Abs(Sqrt((d[0]-p[0])**2+(d[1]-p[1])**2))
-	disox := Abs(Sqrt((d[0]-o[0])**2+(d[1]-o[1])**2))
-	disty := Abs(Sqrt((d[4]-p[0])**2+(d[5]-p[1])**2))
-	disoy := Abs(Sqrt((d[4]-o[0])**2+(d[5]-o[1])**2))
-	thetax := Acos((disto**2+disox**2-distx**2)/(2*disto*disox))
-	thetay := Acos((disto**2+disoy**2-disty**2)/(2*disto*disoy))
-	r[0] := -Cos(thetax)*disto*p[2]
-	r[1] := Cos(thetay)*disto*p[3]
-	
+	if(d[7]-d[5] == 0)
+	{
+		tmp[0] := p[0]
+		tmp[1] := p[1]
+		tmp[2] := p[0]
+		tmp[3] := p[1]+10
+		r[2] := 1
+	} else if(d[6]-d[4] == 0)
+	{
+		tmp[0] := p[0]
+		tmp[1] := p[1]
+		tmp[2] := p[0]+10
+		tmp[3] := p[1]
+		r[2] := 2
+	} else
+	{
+		tmp[0] := p[0]
+		tmp[1] := p[1]
+		tmp[2] := p[0]+10
+		tmp[3] := p[1]+(mx*10)
+		r[2] := 3
+	}
+	px := origin(tmp)
+	rc := 0
+	rm := d.length()
+	while(rc <= rm)
+	{
+		tmp[rc] := d[rc]
+		rc := rc+1
+	}
+	if(d[3]-d[1] == 0)
+	{
+		tmp[4] := p[0]
+		tmp[5] := p[1]
+		tmp[6] := p[0]
+		tmp[7] := p[1]+10
+		r[2] := r[2] . "1"
+	} else if(d[2]-d[0] == 0)
+	{
+		tmp[4] := p[0]
+		tmp[5] := p[1]
+		tmp[6] := p[0]+10
+		tmp[7] := p[1]
+		r[2] := r[2] . "2"
+	} else
+	{
+		tmp[4] := p[0]
+		tmp[5] := p[1]
+		tmp[6] := p[0]+10
+		tmp[7] := p[1]+(my*10)
+		r[2] := r[2] . "3"
+	}
+	py := origin(tmp)
+	r[1] := Sqrt((o[0]-px[0])**2+(o[1]-px[1])**2)*(p[3]/Sqrt((d[4]-d[6])**2+(d[5]-d[7])**2))
+	r[0] := Sqrt((o[0]-py[0])**2+(o[1]-py[1])**2)*(p[2]/Sqrt((d[0]-d[2])**2+(d[1]-d[3])**2))
+	rc := 0
+	rm := d.length()
+	while(rc <= rm)
+	{
+		tmp[rc] := d[rc]
+		rc := rc+1
+	}
+	if(d[3]-d[1] == 0) 
+	{
+		if((o[0] < py[0] && d[2] < d[0]) || (o[0] > py[0] && d[2] > d[0]))
+		{
+			r[0] := -r[0]
+		}
+	} 
+	else
+	{
+		if((o[1] < py[1] && d[3] < d[1]) || (o[1] > py[1] && d[3] > d[1]))
+		{
+			r[0] := -r[0]
+		}
+	}
+	if(d[7]-d[5] == 0) 
+	{
+		if((o[0] < px[0] && d[6] < d[4]) || (o[0] > px[0] && d[6] > d[4]))
+		{
+			r[1] := -r[1]
+		}
+	} 
+	else
+	{
+		if((o[1] < px[1] && d[7] < d[5]) || (o[1] > px[1] && d[7] > d[5]))
+		{
+			r[1] := -r[1]
+		}
+	}
 	return r
 }
 
@@ -82,7 +165,7 @@ origin(d)
 		}
 		else
 		{
-			r[1] := ((r[1]-d[1])/mx)+d[0]
+			r[1] := mx*(r[0]-d[0])+d[1]
 		}
 		r[2] := 3
 	} else if(d[7]-d[5] == 0)
@@ -94,7 +177,7 @@ origin(d)
 		}
 		else
 		{
-			r[0] := mx*(r[0]-d[0])+d[1]
+			r[0] := ((r[1]-d[1])/mx)+d[0]
 		}
 		r[2] := 4
 	} else 
